@@ -1,11 +1,14 @@
-# Golang_Web_Crawling
+# Golang Web Crawling Project
 Web crawling by using golang
 
-## Requirement
-#### TBD
+## Requirements
+TBD
+
+## Features
+TBD
 
 ## Libraries Used
-#### TBD
+1. [colly](https://github.com/gocolly/colly): open source web crawling framework for golang. (TBD)
 
 ## Notes
-#### TBD
+TBD
