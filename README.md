@@ -37,4 +37,4 @@ service YourService {
 ## Notes
 1. Using existing gframework or libraries is a good approach.
 2. Be aware of NOT sending query too frequent.
-3. Query result limit can be specified. Out-of-stock merchandise can be ignored as well.
+3. Query result threshold can be specified in advance. Out-of-stock merchandise can be ignored as well.
