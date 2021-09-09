@@ -26,10 +26,10 @@ service YourService {
 - [ ] 3. Support database to support simulate cache.
 - [ ] 4. Construct a proper ***log*** system for better error tracking and debuging.
 
-## First Use
+## First time Use?
 1. Make sure Golang is installed on your machine.
-2. Clone the project under the proper path (i.e., ```~/username/go/src/github.com/GITHUB_ID/Golang_Web_Crawling```)
-2. Use terminal command
+2. Clone the project under the proper path (i.e., ```~/USERNAME/go/src/github.com/GITHUB_NAME/Golang_Web_Crawling```)
+2. Under the project folder, use terminal command:
 ``` 
 // This command will download all required packages.
 $ go mod download 
