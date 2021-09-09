@@ -1,5 +1,4 @@
 # Golang Web Crawling Project
-Web crawling by using golang
 
 ## Requirement
 Construct a product price comparison service that enables customers to search and compare prices from two online shopping platforms simultaneously.
