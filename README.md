@@ -1,7 +1,8 @@
 # Golang Web Crawling Project
+This project aims at searching products across the biggest two obline shopping platforms (i.e., [Amazon](https://www.amazon.com/) and [Walmart](https://www.walmart.com/)) and find out the one with the lowest price or highest user rating by using Golang and gRPC service.
 
 ## Requirement
-Construct a product price comparison service that enables customers to search and compare prices from two online shopping platforms (Amazon and Walmart) simultaneously.
+Construct a product price comparison service that enables customers to search and compare prices from two online shopping platforms simultaneously.
 
 ```
 service YourService {
@@ -13,7 +14,7 @@ service YourService {
 
 ## Features
 ### Basic
-- [ ] 1. The model need to be able to query and search at least 2 online shopping platforms.
+- [ ] 1. The model need to be able to query and search at least 2 online shopping platforms **(Amazon and Walmart)**.
 - [ ] 2. Unit test is required.
 - [ ] 3. Using ***Worker package (multi-threading in Golang)*** to accelerate workflow. But there must be a maximum limit, though. (Use third-party tools)
 - [ ] 4. Multi-page results must be supported.
@@ -29,7 +30,11 @@ service YourService {
 ## First time Use?
 1. Make sure Golang is installed on your machine.
 2. Clone the project under the proper path (i.e., ```~/USERNAME/go/src/github.com/lancepokaiwang/Golang_Web_Crawling```)
+<<<<<<< HEAD
 2. Under the project folder, use terminal command to download required packages:
+=======
+2. Under the project folder, use terminal command:
+>>>>>>> e6985d3fe3ac9e8d0132c9b7ce4d7100546007cc
 ``` 
 // This command will download all required packages.
 $ go mod download 
