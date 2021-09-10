@@ -39,11 +39,8 @@ $ go mod download
 ### Web crawling:
 - [colly](https://github.com/gocolly/colly): open source web crawling framework for golang.
 
-### gRPC
-- [gRPC](gRPC Getting Started](https://pjchender.dev/golang/grpc-getting-started/): 
-
-### Web crawling:
-- [RESTful in Golang](https://golang.org/doc/tutorial/web-service-gin): tutorial: Developing a RESTful API with Go and Gin
+### API:
+- [gRPC Getting Started](https://pjchender.dev/golang/grpc-getting-started/)
 
 ## Notes
 1. Using existing gframework or libraries is a good approach.
