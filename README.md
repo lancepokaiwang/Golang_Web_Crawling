@@ -29,7 +29,7 @@ service YourService {
 
 ## First time Use?
 1. Make sure Golang is installed on your machine.
-2. Clone the project under the proper path (i.e., ```~/USERNAME/go/src/github.com/GITHUB_NAME/Golang_Web_Crawling```)
+2. Clone the project under the proper path (i.e., ```~/USERNAME/go/src/github.com/lancepokaiwang/Golang_Web_Crawling```)
 2. Under the project folder, use terminal command:
 ``` 
 // This command will download all required packages.
