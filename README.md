@@ -30,11 +30,7 @@ service YourService {
 ## First time Use?
 1. Make sure Golang is installed on your machine.
 2. Clone the project under the proper path (i.e., ```~/USERNAME/go/src/github.com/lancepokaiwang/Golang_Web_Crawling```)
-<<<<<<< HEAD
-2. Under the project folder, use terminal command to download required packages:
-=======
-2. Under the project folder, use terminal command:
->>>>>>> e6985d3fe3ac9e8d0132c9b7ce4d7100546007cc
+3. Under the project folder, use terminal command to download required packages:
 ``` 
 // This command will download all required packages.
 $ go mod download 
