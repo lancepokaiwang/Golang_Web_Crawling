@@ -1,0 +1,26 @@
+syntax = "proto3"; 
+
+// If proto is modified, please run:
+// `protoc *.proto --go_out=plugins=grpc:. --go_opt=paths=source_relative`
+// on this folder.
+
+package product;  // for name space
+option go_package = "proto/product";  // generated code 的 full Go import path
+
+message ProductRequest {  
+    string query = 1;
+}
+
+message ProductResponse {  
+    string id             = 1;
+    string name           = 2;
+    float  price          = 3;
+    float  rating         = 4;
+    string product_url    = 5;
+    string image_url      = 6;
+    // image
+}
+
+service ProductService {  
+    rpc Query(ProductRequest) returns (stream ProductResponse) {};
+}
