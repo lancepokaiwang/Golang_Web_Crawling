@@ -1,7 +1,7 @@
 # Golang Web Crawling Project
 
 ## Requirement
-Construct a product price comparison service that enables customers to search and compare prices from two online shopping platforms simultaneously.
+Construct a product price comparison service that enables customers to search and compare prices from two online shopping platforms (Amazon and Walmart) simultaneously.
 
 ```
 service YourService {
@@ -15,7 +15,7 @@ service YourService {
 ### Basic
 - [ ] 1. The model need to be able to query and search at least 2 online shopping platforms.
 - [ ] 2. Unit test is required.
-- [ ] 3. Using ***Worker package (multi-threading in Golang)*** to accelerate workflow. But there must be a maximum limit, though.
+- [ ] 3. Using ***Worker package (multi-threading in Golang)*** to accelerate workflow. But there must be a maximum limit, though. (Use third-party tools)
 - [ ] 4. Multi-page results must be supported.
 - [ ] 5. Colud use ***interface*** feature to make code more flexible and extendable.
 - [ ] 6. When program is interrupted, ***worker*** can not be stopped until it complete its task.
@@ -38,6 +38,9 @@ $ go mod download
 ## Libraries Used
 ### Web crawling:
 - [colly](https://github.com/gocolly/colly): open source web crawling framework for golang.
+
+### gRPC
+- [gRPC](gRPC Getting Started](https://pjchender.dev/golang/grpc-getting-started/): 
 
 ### Web crawling:
 - [RESTful in Golang](https://golang.org/doc/tutorial/web-service-gin): tutorial: Developing a RESTful API with Go and Gin
