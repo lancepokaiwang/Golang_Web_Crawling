@@ -32,7 +32,10 @@ func (*Server) Query(req *productPB.ProductRequest, stream productPB.ProductServ
 			ProductUrl: "https://amazon.com/" + keyword + strconv.Itoa(i+1),
 			ImageUrl:   "https://image.amazon.com/" + keyword + strconv.Itoa(i+1),
 		}
-		stream.Send(res)
+
+		if err := stream.Send(res); err != nil {
+			log.Fatal("Failed to start streaming")
+		}
 
 		time.Sleep(time.Second)
 	}
