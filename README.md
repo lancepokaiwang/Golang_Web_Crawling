@@ -41,6 +41,7 @@ $ go mod download
 
 ### API:
 - [gRPC Getting Started](https://pjchender.dev/golang/grpc-getting-started/)
+- [gRPC Quick start from Google](https://grpc.io/docs/languages/go/quickstart/)
 
 ## Notes
 1. Using existing gframework or libraries is a good approach.
