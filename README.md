@@ -29,22 +29,22 @@ service YourService {
 
 ## First Time Use?
 1. Make sure Golang is installed on your machine.
-2. Clone the project under the proper path (i.e., ```~/USERNAME/go/src/github.com/lancepokaiwang/Golang_Web_Crawling```)
-3. Under the project folder, use terminal command to download required packages:
+2. Clone the project under the proper path (outside of your $GOPATH)
+3. Make sure GO111MODULE is "" or "on".
+4. Under the project folder, use terminal command to download required packages:
 ``` 
-// This command will download all required packages.
-$ go mod download 
+// This command will update all required packages. 
+$ go mod tidy 
 ```
 
 ## How to Run?
 ```
 // Start gRPC server.
-$ go run *
+$ go run main.go
 ```
 ```
 // Let's make a fake query.
-$ cd client
-$ go run *
+$ go run client/client.go
 
 // Outputs will look like:
 // 2021/09/10 17:16:57 id:"asd1234"  name:"iPhone_1"  price:1.99  rating:4.5  product_url:"https://amazon.com/iPhone_1"  image_url:"https://image.amazon.com/iPhone_1"
