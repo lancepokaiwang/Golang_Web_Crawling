@@ -2,7 +2,7 @@
 
 protoc -I ./proto/product product.proto \
   --js_out=import_style=commonjs:./client/src \
-  --grpc-web_out=import_style=commonjs,mode=grpcwebtext:./client/src
+  --grpc-web_out=import_style=commonjs,mode=grpcweb:./client/src
 
 
 protoc -I ./proto/product product.proto \
