@@ -46,6 +46,7 @@ func (*Server) Query(req *productPB.ProductRequest, stream productPB.ProductServ
 
 func (*Server) SayHello(ctx context.Context, req *productPB.HelloRequest) (*productPB.HelloReply, error) {
 	name := req.GetName()
+	s.ContextLog("Got a request, try to say hello")
 	res := &productPB.HelloReply{
 		Message: "hello, " + name,
 	}
@@ -55,7 +56,7 @@ func (*Server) SayHello(ctx context.Context, req *productPB.HelloRequest) (*prod
 
 func New() {
 	s.ContextLog("Starting gRPC server")
-	lis, err := net.Listen("tcp", "localhost:8000")
+	lis, err := net.Listen("tcp", "0.0.0.0:8000")
 	if err != nil {
 		log.Fatalf("Failed to create gRPC service: %v \n", err)
 	}

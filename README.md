@@ -37,22 +37,21 @@ $ go mod download
 ```
 
 ## How to Run?
+### precondition: download and install docker desktop 
+https://www.docker.com/products/docker-desktop
 ```
-// Start gRPC server.
-$ go run *
-```
-```
-// Let's make a fake query.
-$ cd client
-$ go run *
+// the very First time
+$ docker-compose build
+$ docker-compose up
 
-// Outputs will look like:
-// 2021/09/10 17:16:57 id:"asd1234"  name:"iPhone_1"  price:1.99  rating:4.5  product_url:"https://amazon.com/iPhone_1"  image_url:"https://image.amazon.com/iPhone_1"
-// 2021/09/10 17:16:58 id:"asd1234"  name:"iPhone_2"  price:2.99  rating:4.5  product_url:"https://amazon.com/iPhone_2"  image_url:"https://image.amazon.com/iPhone_2"
-// 2021/09/10 17:16:59 id:"asd1234"  name:"iPhone_3"  price:3.99  rating:4.5  product_url:"https://amazon.com/iPhone_3"  image_url:"https://image.amazon.com/iPhone_3"
-......
-// 2021/09/10 17:17:05 id:"asd1234"  name:"iPhone_9"  price:9.99  rating:4.5  product_url:"https://amazon.com/iPhone_9"  image_url:"https://image.amazon.com/iPhone_9"
-// 2021/09/10 17:17:06 id:"asd1234"  name:"iPhone_10"  price:10.99  rating:4.5  product_url:"https://amazon.com/iPhone_10"  image_url:"https://image.amazon.com/iPhone_10"
+// if you have build it
+$ docker-compose up
+
+
+// if you want to shut it down
+$ docker-compose down
+
+// browse to localhost:4000 to see the frontend
 ```
 
 ## Libraries Used

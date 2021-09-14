@@ -1,8 +1,9 @@
 server {
   listen       8080;
-  server_name  localhost;
+  server_name  0.0.0.0;
 
   location / {
+    grpc_set_header Content-Type application/grpc;
     grpc_pass ${NGINX_GRPC_PASS};
 
     if ($request_method = 'OPTIONS') {
