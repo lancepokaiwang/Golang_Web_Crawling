@@ -1,0 +1,32 @@
+version: '3'
+services:
+  client:
+    build:
+      context: client
+      dockerfile: Dockerfile
+    ports:
+      - '4000:4000'
+    volumes:
+      - ./client/src:/app/src
+
+  app:
+    build: .
+    working_dir: /app
+    ports:
+      - '8000:8000'
+    volumes: 
+      - ./logs:/app/logs
+
+  nginx:
+    build:
+      context: nginxconf
+      dockerfile: Dockerfile
+    volumes: 
+      - ./logs:/var/log/nginx
+    depends_on:
+      - app
+    ports:
+      - '8080:8080'
+    command: /bin/sh -c "envsubst '$$NGINX_GRPC_PASS' < /etc/nginx/conf.d/grpc_proxy.conf.template > /etc/nginx/conf.d/grpc_proxy.conf && nginx -g 'daemon off;'"
+    environment:
+      NGINX_GRPC_PASS: 'app:8000'

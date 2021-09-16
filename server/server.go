@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net"
@@ -12,7 +13,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-type Server struct{}
+type Server struct{ productPB.ProductServiceServer }
 
 func (*Server) Query(req *productPB.ProductRequest, stream productPB.ProductService_QueryServer) error {
 	log.Printf("Query function is invoked with %v \n", req)
@@ -43,9 +44,19 @@ func (*Server) Query(req *productPB.ProductRequest, stream productPB.ProductServ
 	return nil
 }
 
+func (*Server) SayHello(ctx context.Context, req *productPB.HelloRequest) (*productPB.HelloReply, error) {
+	name := req.GetName()
+	s.ContextLog("Got a request, try to say hello")
+	res := &productPB.HelloReply{
+		Message: "hello, " + name,
+	}
+
+	return res, nil
+}
+
 func New() {
 	s.ContextLog("Starting gRPC server")
-	lis, err := net.Listen("tcp", "localhost:8080")
+	lis, err := net.Listen("tcp", "0.0.0.0:8000")
 	if err != nil {
 		log.Fatalf("Failed to create gRPC service: %v \n", err)
 	}
