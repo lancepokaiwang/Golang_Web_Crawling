@@ -62,6 +62,7 @@ $ go run *
 ### API:
 - [gRPC Getting Started](https://pjchender.dev/golang/grpc-getting-started/)
 - [gRPC Quick start from Google](https://grpc.io/docs/languages/go/quickstart/)
+- [gRPC-Web](https://github.com/grpc/grpc-web)
 
 ## Notes
 1. Using existing gframework or libraries is a good approach.
