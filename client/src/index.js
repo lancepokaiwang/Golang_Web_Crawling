@@ -8,14 +8,23 @@ document.getElementById('button').addEventListener('click', () => {
   const req = new HelloRequest();
   const name = document.getElementById('input').value || 'world';
   req.setName(name);
-  client.sayHello(req, {}, (err, res) => {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log(res);
-      document.getElementById('message').textContent = res.getMessage();
-    }
+
+  const stream = client.sayHello(req, {});
+  stream.on('data', res => {
+    document.getElementById('count_result').textContent = res.getMessage();
   });
+  stream.on('status', status => {
+    console.log(status);
+    console.log(status.details);
+    console.log(status.metadata);
+  });
+  stream.on('error', err => {
+    console.log(err);
+  });
+  stream.on('end', () => {
+    console.log('end');
+  });
+
 });
 
 document.getElementById('count').addEventListener('click', () => {

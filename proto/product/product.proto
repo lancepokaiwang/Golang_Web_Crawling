@@ -31,5 +31,5 @@ message HelloReply {
 
 service ProductService {  
     rpc Query(ProductRequest) returns (stream ProductResponse) {};
-    rpc SayHello(HelloRequest) returns (HelloReply);
+    rpc SayHello(HelloRequest) returns (stream HelloReply) {};
 }

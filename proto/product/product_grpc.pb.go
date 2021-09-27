@@ -19,7 +19,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ProductServiceClient interface {
 	Query(ctx context.Context, in *ProductRequest, opts ...grpc.CallOption) (ProductService_QueryClient, error)
-	SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloReply, error)
+	SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (ProductService_SayHelloClient, error)
 }
 
 type productServiceClient struct {
@@ -62,13 +62,36 @@ func (x *productServiceQueryClient) Recv() (*ProductResponse, error) {
 	return m, nil
 }
 
-func (c *productServiceClient) SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloReply, error) {
-	out := new(HelloReply)
-	err := c.cc.Invoke(ctx, "/product.ProductService/SayHello", in, out, opts...)
+func (c *productServiceClient) SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (ProductService_SayHelloClient, error) {
+	stream, err := c.cc.NewStream(ctx, &ProductService_ServiceDesc.Streams[1], "/product.ProductService/SayHello", opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &productServiceSayHelloClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type ProductService_SayHelloClient interface {
+	Recv() (*HelloReply, error)
+	grpc.ClientStream
+}
+
+type productServiceSayHelloClient struct {
+	grpc.ClientStream
+}
+
+func (x *productServiceSayHelloClient) Recv() (*HelloReply, error) {
+	m := new(HelloReply)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 // ProductServiceServer is the server API for ProductService service.
@@ -76,7 +99,7 @@ func (c *productServiceClient) SayHello(ctx context.Context, in *HelloRequest, o
 // for forward compatibility
 type ProductServiceServer interface {
 	Query(*ProductRequest, ProductService_QueryServer) error
-	SayHello(context.Context, *HelloRequest) (*HelloReply, error)
+	SayHello(*HelloRequest, ProductService_SayHelloServer) error
 	mustEmbedUnimplementedProductServiceServer()
 }
 
@@ -87,8 +110,8 @@ type UnimplementedProductServiceServer struct {
 func (UnimplementedProductServiceServer) Query(*ProductRequest, ProductService_QueryServer) error {
 	return status.Errorf(codes.Unimplemented, "method Query not implemented")
 }
-func (UnimplementedProductServiceServer) SayHello(context.Context, *HelloRequest) (*HelloReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SayHello not implemented")
+func (UnimplementedProductServiceServer) SayHello(*HelloRequest, ProductService_SayHelloServer) error {
+	return status.Errorf(codes.Unimplemented, "method SayHello not implemented")
 }
 func (UnimplementedProductServiceServer) mustEmbedUnimplementedProductServiceServer() {}
 
@@ -124,22 +147,25 @@ func (x *productServiceQueryServer) Send(m *ProductResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func _ProductService_SayHello_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(HelloRequest)
-	if err := dec(in); err != nil {
-		return nil, err
+func _ProductService_SayHello_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(HelloRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
 	}
-	if interceptor == nil {
-		return srv.(ProductServiceServer).SayHello(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/product.ProductService/SayHello",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ProductServiceServer).SayHello(ctx, req.(*HelloRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+	return srv.(ProductServiceServer).SayHello(m, &productServiceSayHelloServer{stream})
+}
+
+type ProductService_SayHelloServer interface {
+	Send(*HelloReply) error
+	grpc.ServerStream
+}
+
+type productServiceSayHelloServer struct {
+	grpc.ServerStream
+}
+
+func (x *productServiceSayHelloServer) Send(m *HelloReply) error {
+	return x.ServerStream.SendMsg(m)
 }
 
 // ProductService_ServiceDesc is the grpc.ServiceDesc for ProductService service.
@@ -148,16 +174,16 @@ func _ProductService_SayHello_Handler(srv interface{}, ctx context.Context, dec 
 var ProductService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "product.ProductService",
 	HandlerType: (*ProductServiceServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "SayHello",
-			Handler:    _ProductService_SayHello_Handler,
-		},
-	},
+	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "Query",
 			Handler:       _ProductService_Query_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "SayHello",
+			Handler:       _ProductService_SayHello_Handler,
 			ServerStreams: true,
 		},
 	},

@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net"
@@ -44,14 +43,22 @@ func (*Server) Query(req *productPB.ProductRequest, stream productPB.ProductServ
 	return nil
 }
 
-func (*Server) SayHello(ctx context.Context, req *productPB.HelloRequest) (*productPB.HelloReply, error) {
+func (*Server) SayHello(req *productPB.HelloRequest, stream productPB.ProductService_SayHelloServer) error {
 	name := req.GetName()
-	s.ContextLog("Got a request, try to say hello")
-	res := &productPB.HelloReply{
-		Message: "hello, " + name,
+
+	for i := 0; i < 10; i++ {
+		n := strconv.Itoa(i)
+		res := &productPB.HelloReply{
+			Message: `hello, ` + name + n,
+		}
+		if err := stream.Send(res); err != nil {
+			log.Fatal("Failed to start streaming")
+			return err
+		}
+		time.Sleep(500 * time.Millisecond)
 	}
 
-	return res, nil
+	return nil
 }
 
 func New() {

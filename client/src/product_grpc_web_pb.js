@@ -153,7 +153,7 @@ proto.product.ProductServicePromiseClient.prototype.query =
  */
 const methodDescriptor_ProductService_SayHello = new grpc.web.MethodDescriptor(
   '/product.ProductService/SayHello',
-  grpc.web.MethodType.UNARY,
+  grpc.web.MethodType.SERVER_STREAMING,
   proto.product.HelloRequest,
   proto.product.HelloReply,
   /**
@@ -187,37 +187,32 @@ const methodInfo_ProductService_SayHello = new grpc.web.AbstractClientBase.Metho
 
 
 /**
- * @param {!proto.product.HelloRequest} request The
- *     request proto
+ * @param {!proto.product.HelloRequest} request The request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.product.HelloReply)}
- *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.product.HelloReply>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.product.HelloReply>}
  *     The XHR Node Readable Stream
  */
 proto.product.ProductServiceClient.prototype.sayHello =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.serverStreaming(this.hostname_ +
       '/product.ProductService/SayHello',
       request,
       metadata || {},
-      methodDescriptor_ProductService_SayHello,
-      callback);
+      methodDescriptor_ProductService_SayHello);
 };
 
 
 /**
- * @param {!proto.product.HelloRequest} request The
- *     request proto
+ * @param {!proto.product.HelloRequest} request The request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.product.HelloReply>}
- *     Promise that resolves to the response
+ * @return {!grpc.web.ClientReadableStream<!proto.product.HelloReply>}
+ *     The XHR Node Readable Stream
  */
 proto.product.ProductServicePromiseClient.prototype.sayHello =
     function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
+  return this.client_.serverStreaming(this.hostname_ +
       '/product.ProductService/SayHello',
       request,
       metadata || {},
