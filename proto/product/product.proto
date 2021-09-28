@@ -12,13 +12,12 @@ message ProductRequest {
 }
 
 message ProductResponse {  
-    string id             = 1;
-    string name           = 2;
-    float  price          = 3;
-    float  rating         = 4;
+    string platform       = 1;
+    string id             = 2;
+    string name           = 3;
+    float  price          = 4;
     string product_url    = 5;
     string image_url      = 6;
-    // image
 }
 
 message HelloRequest {
