@@ -23,13 +23,11 @@ func (*Server) Query(req *productPB.ProductRequest, stream productPB.ProductServ
 	for i := 0; i < 10; i++ {
 		// Query keyword here...
 		price, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", 1.99+float32(i)), 32)
-		rating, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", 4.5-float32(i/10)), 32)
 
 		res := &productPB.ProductResponse{
 			Id:         "asd1234" + strconv.Itoa(i+1),
 			Name:       keyword + strconv.Itoa(i+1),
 			Price:      float32(price),
-			Rating:     float32(rating),
 			ProductUrl: "https://amazon.com/" + keyword + strconv.Itoa(i+1),
 			ImageUrl:   "https://image.amazon.com/" + keyword + strconv.Itoa(i+1),
 		}

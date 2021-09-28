@@ -1,5 +1,5 @@
 # Golang Web Crawling Project
-This project aims at searching products across the biggest two obline shopping platforms (i.e., [Amazon](https://www.amazon.com/) and [Walmart](https://www.walmart.com/)) and find out the one with the lowest price or highest user rating by using Golang and gRPC service.
+This project aims at searching products across the biggest two obline shopping platforms (i.e., [Ebay](https://www.ebay.com/) and [Walmart](https://www.walmart.com/)) and find out the one with the lowest price or highest user rating by using Golang and gRPC service.
 
 ## Requirement
 Construct a product price comparison service that enables customers to search and compare prices from two online shopping platforms simultaneously.
