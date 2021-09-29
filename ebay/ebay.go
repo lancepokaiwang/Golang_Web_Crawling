@@ -14,6 +14,8 @@ import (
 	"strconv"
 	"strings"
 
+	productPB "github.com/lancepokaiwang/Golang_Web_Crawling/proto/product"
+
 	"github.com/gocolly/colly"
 	"github.com/pkg/errors"
 )
@@ -30,7 +32,7 @@ func New() *Ebay {
 }
 
 // Crawl performs crawling operations.
-func (e *Ebay) Crawl(keyword string, page int) {
+func (e *Ebay) Crawl(keyword string, page int) productPB.ProductResponse {
 	url := fmt.Sprintf("https://www.ebay.com/sch/i.html?_nkw=%v&_pgn=%v", html.EscapeString(strings.Replace(keyword, " ", "+", -1)), page)
 
 	c.OnHTML(".s-item", func(soup *colly.HTMLElement) {
@@ -47,6 +49,8 @@ func (e *Ebay) Crawl(keyword string, page int) {
 		log.Fatalf("Failed to start scraping url %q: %v", url, err)
 	}
 
+	// TODO: not sure what type to return. map? slice? or single one?
+	return productPB.ProductResponse{}
 }
 
 // extractContent extract product information from HTML contents.
