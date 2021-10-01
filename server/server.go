@@ -36,6 +36,12 @@ func (*Server) Query(req *productPB.ProductRequest, stream productPB.ProductServ
 
 	go wpool.Run(ctx)
 
+	/*
+		TODO:
+
+		For Sun: Please remember to combine all results before storing data into Redis.
+	*/
+
 Loop:
 	for {
 		select {

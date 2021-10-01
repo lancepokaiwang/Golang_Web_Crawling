@@ -24,15 +24,14 @@ var c = colly.NewCollector(
 	colly.AllowedDomains("www.ebay.com"),
 )
 
-var keyword string
-var results []productPB.ProductResponse
-
-type Ebay struct{}
+type Ebay struct {
+	keyword string
+	results []productPB.ProductResponse
+}
 
 // New creates a new Ebay instance.
 func New(kw string) *Ebay {
-	keyword = kw
-	return &Ebay{}
+	return &Ebay{keyword: kw}
 }
 
 // Crawl performs crawling operations.
@@ -49,14 +48,14 @@ func (e *Ebay) Crawl() []productPB.ProductResponse {
 	})
 
 	for page := 1; page <= 5; page++ {
-		url := fmt.Sprintf("https://www.ebay.com/sch/i.html?_nkw=%v&_pgn=%v", html.EscapeString(strings.Replace(keyword, " ", "+", -1)), page)
+		url := fmt.Sprintf("https://www.ebay.com/sch/i.html?_nkw=%v&_pgn=%v", html.EscapeString(strings.Replace(e.keyword, " ", "+", -1)), page)
 		if err := c.Visit(url); err != nil {
 			log.Fatalf("Failed to start scraping url %q: %v", url, err)
 		}
 	}
 
 	// TODO: not sure what type to return. map? slice? or single one?
-	return results
+	return e.results
 }
 
 // extractContent extract product information from HTML contents.
@@ -83,7 +82,7 @@ func (e *Ebay) extractContent(soup *colly.HTMLElement) error {
 		ImageUrl:   imageUrl,
 	}
 
-	results = append(results, res)
+	e.results = append(e.results, res)
 
 	return nil
 }
