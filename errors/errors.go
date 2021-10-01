@@ -22,9 +22,20 @@ func Fatal(message string) {
 	os.Exit(0)
 }
 
+// Fatalf records and outputs the formating error message then shut the entire application down immediately.
+func Fatalf(format string, v ...interface{}) {
+	log.Printf(format, v...)
+	os.Exit(0)
+}
+
 // ContextLog records and outputs the given message.
-func ContextLog(message string) {
+func Println(message string) {
 	log.Println(message)
+}
+
+// ContextLogf records and outputs the given formating message.
+func Printf(format string, v ...interface{}) {
+	log.Printf(format, v...)
 }
 
 // GetDateTime returns the current datetime in string format.

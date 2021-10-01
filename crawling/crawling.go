@@ -1,18 +1,23 @@
 package crawling
 
 import (
-	amazon "github.com/lancepokaiwang/Golang_Web_Crawling/ebay"
-	ebay "github.com/lancepokaiwang/Golang_Web_Crawling/ebay"
+	// "github.com/lancepokaiwang/Golang_Web_Crawling/amazon"
+	"github.com/lancepokaiwang/Golang_Web_Crawling/ebay"
 	productPB "github.com/lancepokaiwang/Golang_Web_Crawling/proto/product"
 )
 
-type CrawlingProvider struct{}
+type CrawlClient struct {
+	Keyword string
+	Web     WebsiteType
+}
 
-func (cp CrawlingProvider) Process(keyword string, web websiteType) []productPB.ProductResponse {
+// PerformCrawling prodives an entry point for clients who want to perform crawling for both platforms.
+func (cc CrawlClient) PerformCrawling(keyword string, web WebsiteType) []productPB.ProductResponse {
 	switch web {
 	case TypeAmazon:
-		a := amazon.New(keyword)
-		return a.Crawl()
+		// a := amazon.New(keyword)
+		// return a.Crawl()
+		return nil
 	case TypeEbay:
 		e := ebay.New(keyword)
 		return e.Crawl()
@@ -21,23 +26,10 @@ func (cp CrawlingProvider) Process(keyword string, web websiteType) []productPB.
 	}
 }
 
-type Logic interface {
-	Process(keyword string, web websiteType) []productPB.ProductResponse
-}
-
-type CrawlClient struct {
-	L Logic
-}
-
-// PerformCrawling prodives an entry point for clients who want to perform crawling for both platforms.
-func (cc CrawlClient) PerformCrawling(keyword string, web websiteType) []productPB.ProductResponse {
-	return cc.L.Process(keyword, web)
-}
-
-type websiteType int
+type WebsiteType int
 
 const (
-	TypeAmazon websiteType = iota
+	TypeAmazon WebsiteType = iota
 	TypeEbay
 )
 
@@ -46,10 +38,11 @@ In main or any function where you want to perform crawling for both platforms:
 
 func main() {
 	cc := CrawlClient{
-		L: CrawlingProvider{},
+		Keyword: keyword,
+		Web:     crawling.TypeAmazon,
 	}
 
-	data := cc.PerformCrawling(<KEYWORD>, <WebsiteType>)
+	data := cc.PerformCrawling(cc.Keyword, cc.Web)
 	if data == nil{
 		// Error handling here.
 	}
