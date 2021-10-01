@@ -22,7 +22,7 @@ func (cp CrawlingProvider) Process(keyword string, web websiteType) []productPB.
 }
 
 type Logic interface {
-	Process(keyword string, web WebsiteType) []productPB.ProductResponse
+	Process(keyword string, web websiteType) []productPB.ProductResponse
 }
 
 type CrawlClient struct {
@@ -30,7 +30,7 @@ type CrawlClient struct {
 }
 
 // PerformCrawling prodives an entry point for clients who want to perform crawling for both platforms.
-func (cc CrawlClient) PerformCrawling(keyword string, web WebsiteType) []productPB.ProductResponse {
+func (cc CrawlClient) PerformCrawling(keyword string, web websiteType) []productPB.ProductResponse {
 	return cc.L.Process(keyword, web)
 }
 
