@@ -8,7 +8,7 @@ import (
 
 type CrawlingProvider struct{}
 
-func (cp CrawlingProvider) Process(keyword string, web WebsiteType) []productPB.ProductResponse {
+func (cp CrawlingProvider) Process(keyword string, web websiteType) []productPB.ProductResponse {
 	switch web {
 	case TypeAmazon:
 		a := amazon.New(keyword)
@@ -34,10 +34,10 @@ func (cc CrawlClient) PerformCrawling(keyword string, web WebsiteType) []product
 	return cc.L.Process(keyword, web)
 }
 
-type WebsiteType int
+type websiteType int
 
 const (
-	TypeAmazon = iota
+	TypeAmazon websiteType = iota
 	TypeEbay
 )
 
