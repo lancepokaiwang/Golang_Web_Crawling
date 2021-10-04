@@ -1,8 +1,8 @@
 /* eslint-disable no-console */
-import { HelloRequest, ProductRequest } from './product_pb.js';
-import { ProductServiceClient } from './product_grpc_web_pb.js';
+const { HelloRequest, ProductRequest } = require('./product_pb.js');
+const { ProductServiceClient } = require('./product_grpc_web_pb.js');
 
-const client = new ProductServiceClient('http://localhost:8080', null, null);
+const client = new ProductServiceClient('http://localhost:8080');
 
 document.getElementById('button').addEventListener('click', () => {
   const req = new HelloRequest();

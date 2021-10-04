@@ -29,7 +29,7 @@ proto.product = require('./product_pb.js');
 proto.product.ProductServiceClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
-  options['format'] = 'binary';
+  options['format'] = 'text';
 
   /**
    * @private @const {!grpc.web.GrpcWebClientBase} The client
@@ -55,7 +55,7 @@ proto.product.ProductServiceClient =
 proto.product.ProductServicePromiseClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
-  options['format'] = 'binary';
+  options['format'] = 'text';
 
   /**
    * @private @const {!grpc.web.GrpcWebClientBase} The client

@@ -45,6 +45,7 @@ func (*Server) Query(req *productPB.ProductRequest, stream productPB.ProductServ
 
 func (*Server) SayHello(req *productPB.HelloRequest, stream productPB.ProductService_SayHelloServer) error {
 	name := req.GetName()
+	log.Print(req.ProtoReflect())
 
 	for i := 0; i < 10; i++ {
 		n := strconv.Itoa(i)
@@ -68,7 +69,10 @@ func New() {
 		log.Fatalf("Failed to create gRPC service: %v \n", err)
 	}
 
-	grpcServer := grpc.NewServer()
+	const maxMsgSize = 1024 * 1024 * 1024 * 2
+	grpcServer := grpc.NewServer(
+		grpc.MaxRecvMsgSize(maxMsgSize),
+		grpc.MaxSendMsgSize(maxMsgSize))
 	productPB.RegisterProductServiceServer(grpcServer, &Server{})
 
 	if err := grpcServer.Serve(lis); err != nil {
