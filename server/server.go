@@ -2,14 +2,20 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 
 	"github.com/lancepokaiwang/Golang_Web_Crawling/crawling"
-	"github.com/lancepokaiwang/Golang_Web_Crawling/ebay"
 	s "github.com/lancepokaiwang/Golang_Web_Crawling/errors"
 	productPB "github.com/lancepokaiwang/Golang_Web_Crawling/proto/product"
+	"github.com/lancepokaiwang/Golang_Web_Crawling/redis"
 	"github.com/lancepokaiwang/Golang_Web_Crawling/workers"
+
 	"google.golang.org/grpc"
 )
 
@@ -17,85 +23,79 @@ const (
 	workersCount = 5
 )
 
-type Server struct{ productPB.ProductServiceServer }
+var wp *workers.WorkerPool
+
+type Server struct{}
 
 func (*Server) Query(req *productPB.ProductRequest, stream productPB.ProductService_QueryServer) error {
-	log.Printf("Query function is invoked with %v \n", req)
+	s.Printf("Query function is invoked with %v \n", req)
 
 	keyword := req.GetQuery()
 
-	wpool := workers.New(workersCount)
-
-	ctx, cancel := context.WithCancel(context.TODO())
-	defer cancel()
-
-	ebay := ebay.New(keyword)
-	// amazon := amazon.New(keyword)
-	websites := []crawling.CrawlerInterface{ebay /*amazon*/}
-	go wpool.NewJob(websites)
-
-	go wpool.Run(ctx)
-
-	/*
-		TODO:
-
-		For Sun: Please remember to combine all results before storing data into Redis.
-	*/
-
-Loop:
-	for {
-		select {
-		case res, ok := <-wpool.Results():
-			if !ok {
-				continue
-			}
-
-			// TODO: handle results
-			if err := stream.Send(&res); err != nil {
-				log.Fatal("Failed to start streaming")
-			}
-		case <-wpool.Done:
-			break Loop
-		default:
-			continue
-		}
+	redisClient := redis.NewClient()
+	products, err := redisClient.Query(keyword)
+	if err != nil {
+		s.Fatalf("Failed to query redis: %v", err)
 	}
 
-	// for i := 0; i < 10; i++ {
-	// 	// Query keyword here...
-	// 	price, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", 1.99+float32(i)), 32)
+	if products != nil {
+		for _, product := range products {
+			if err := stream.Send(&product); err != nil {
+				s.Fatalf("Failed to send response by stream: %v", err)
+			}
+		}
 
-	// 	res := &productPB.ProductResponse{
-	// 		Id:         "asd1234" + strconv.Itoa(i+1),
-	// 		Name:       keyword + strconv.Itoa(i+1),
-	// 		Price:      float32(price),
-	// 		ProductUrl: "https://amazon.com/" + keyword + strconv.Itoa(i+1),
-	// 		ImageUrl:   "https://image.amazon.com/" + keyword + strconv.Itoa(i+1),
-	// 	}
+		return nil
+	}
 
-	// 	if err := stream.Send(res); err != nil {
-	// 		log.Fatal("Failed to start streaming")
-	// 	}
+	amazon := &crawling.CrawlClient{
+		Keyword: keyword,
+		Web:     crawling.TypeAmazon,
+		Stream:  stream,
+	}
 
-	// 	time.Sleep(time.Second)
-	// }
+	ebay := &crawling.CrawlClient{
+		Keyword: keyword,
+		Web:     crawling.TypeEbay,
+		Stream:  stream,
+	}
 
-	// TODO: what to return
+	wg := &sync.WaitGroup{}
+	wg.Add(2)
+	resultChan := make(chan []productPB.ProductResponse, 2)
+
+	go wp.NewJob([]*crawling.CrawlClient{amazon, ebay}, wg, resultChan)
+
+	go func() {
+		wg.Wait()
+		close(resultChan)
+	}()
+
+	var combinedResult []productPB.ProductResponse
+
+	for results := range resultChan {
+		combinedResult = append(combinedResult, results...)
+		fmt.Printf("result len: %d\n", len(results))
+	}
+
+	ps := redis.ProductSlice{Products: combinedResult}
+	if err := redisClient.Insert(keyword, ps); err != nil {
+		s.Fatalf("Failed to insert %s into redis: %v", keyword, err)
+	}
+
 	return nil
 }
 
-func (*Server) SayHello(ctx context.Context, req *productPB.HelloRequest) (*productPB.HelloReply, error) {
-	name := req.GetName()
-	s.ContextLog("Got a request, try to say hello")
-	res := &productPB.HelloReply{
-		Message: "hello, " + name,
-	}
-
-	return res, nil
-}
-
 func New() {
-	s.ContextLog("Starting gRPC server")
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Init worker pool.
+	wp = workers.New(workersCount)
+	// Activate workers to listening for jobs channel.
+	go wp.Run(ctx)
+
+	s.Println("Starting gRPC server")
 	lis, err := net.Listen("tcp", "0.0.0.0:8000")
 	if err != nil {
 		log.Fatalf("Failed to create gRPC service: %v \n", err)
@@ -104,9 +104,34 @@ func New() {
 	grpcServer := grpc.NewServer()
 	productPB.RegisterProductServiceServer(grpcServer, &Server{})
 
-	// TODO: graceful shut down
+	// Graceful shutdown.
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		s := <-sigCh
+		log.Printf("got signal %v, attempting graceful shutdown", s)
+		cancel()
+		grpcServer.GracefulStop()
+		wg.Done()
+	}()
 
+	fmt.Println("grpc server is listening...")
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve: %v \n", err)
 	}
+
+	wg.Wait()
+	log.Println("Graceful shutdown")
+}
+
+func (*Server) SayHello(ctx context.Context, req *productPB.HelloRequest) (*productPB.HelloReply, error) {
+	name := req.GetName()
+	s.Println("Got a request, try to say hello")
+	res := &productPB.HelloReply{
+		Message: "hello, " + name,
+	}
+
+	return res, nil
 }

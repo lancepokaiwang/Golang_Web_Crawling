@@ -5,23 +5,21 @@ import (
 	"sync"
 
 	"github.com/lancepokaiwang/Golang_Web_Crawling/crawling"
+	s "github.com/lancepokaiwang/Golang_Web_Crawling/errors"
 	productPB "github.com/lancepokaiwang/Golang_Web_Crawling/proto/product"
 )
 
-func worker(ctx context.Context, wg *sync.WaitGroup, jobs <-chan crawling.CrawlerInterface, results chan<- productPB.ProductResponse) {
-	defer wg.Done()
+func worker(ctx context.Context, jobs <-chan *job) {
 	for {
 		select {
-		case job, ok := <-jobs:
-			if !ok {
-				return
-			}
-			results <- job.Crawl("test", 1)
+		case job := <-jobs:
+			job.resultChan <- job.cc.PerformCrawling()
+			job.wg.Done()
+
+		// Cancel worker.
+		// It will be called when ctx cancel() is called.
 		case <-ctx.Done():
-			// fmt.Printf("cancelled worker. Error detail: %v\n", ctx.Err())
-			// results <- productPB.ProductResponse{
-			// 	Err: ctx.Err(),
-			// }
+			s.Println("Worker is canceld")
 			return
 		}
 	}
@@ -29,39 +27,41 @@ func worker(ctx context.Context, wg *sync.WaitGroup, jobs <-chan crawling.Crawle
 
 type WorkerPool struct {
 	workersCount int
-	jobs         chan crawling.CrawlerInterface
-	results      chan productPB.ProductResponse
-	Done         chan struct{}
+	jobs         chan *job
 }
 
-func New(wcount int) WorkerPool {
-	return WorkerPool{
-		workersCount: wcount,
-		jobs:         make(chan crawling.CrawlerInterface, wcount),
-		results:      make(chan productPB.ProductResponse, wcount),
-		Done:         make(chan struct{}),
+func New(workersCount int) *WorkerPool {
+	return &WorkerPool{
+		workersCount: workersCount,
+		// TODO: change hard coded "10" here. Just for test.
+		jobs: make(chan *job, 10),
 	}
 }
 
-func (wp WorkerPool) Run(ctx context.Context) {
-	var wg sync.WaitGroup
+func (wp *WorkerPool) Run(ctx context.Context) {
 	for i := 0; i < wp.workersCount; i++ {
-		wg.Add(1)
-		go worker(ctx, &wg, wp.jobs, wp.results)
+		go worker(ctx, wp.jobs)
 	}
-
-	wg.Wait()
-	close(wp.Done)
-	close(wp.results)
 }
 
-func (wp WorkerPool) Results() <-chan productPB.ProductResponse {
-	return wp.results
+type job struct {
+	cc         *crawling.CrawlClient
+	wg         *sync.WaitGroup
+	resultChan chan<- []productPB.ProductResponse
 }
 
-func (wp WorkerPool) NewJob(jobsBulk []crawling.CrawlerInterface) {
-	for _, job := range jobsBulk {
+func newJob(cc *crawling.CrawlClient, wg *sync.WaitGroup, resultChan chan<- []productPB.ProductResponse) *job {
+	return &job{
+		cc:         cc,
+		wg:         wg,
+		resultChan: resultChan,
+	}
+}
+
+func (wp *WorkerPool) NewJob(ccs []*crawling.CrawlClient, wg *sync.WaitGroup, resultChan chan<- []productPB.ProductResponse) {
+	// If jobs is full, it will block here.
+	for _, cc := range ccs {
+		job := newJob(cc, wg, resultChan)
 		wp.jobs <- job
 	}
-	close(wp.jobs)
 }

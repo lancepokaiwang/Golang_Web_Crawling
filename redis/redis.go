@@ -29,8 +29,9 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/go-redis/redis"
 	productPB "github.com/lancepokaiwang/Golang_Web_Crawling/proto/product"
+
+	"github.com/go-redis/redis"
 	"github.com/pkg/errors"
 )
 
@@ -59,7 +60,7 @@ func (r *Redis) Insert(keyword string, value ProductSlice) error {
 func (r *Redis) Query(keyword string) ([]productPB.ProductResponse, error) {
 	data, err := r.client.Get(keyword).Bytes()
 	if err == redis.Nil {
-		return nil, errors.Wrapf(err, "keyword %v does not exist", keyword)
+		return nil, nil
 	} else if err != nil {
 		return nil, errors.Wrap(err, "failed to query keyword")
 	}
@@ -71,6 +72,25 @@ func (r *Redis) Query(keyword string) ([]productPB.ProductResponse, error) {
 	}
 
 	return results.Products, nil
+}
+
+func (r *Redis) Update(keyword string, value ProductSlice) error {
+	data_exist, err := r.Query(keyword)
+	if err != nil {
+		return errors.Wrap(err, "failed to query existing data")
+	}
+
+	// Combine exist data.
+	if data_exist != nil {
+		value.Products = append(value.Products, data_exist...)
+	}
+
+	data, err := value.marshalBinary()
+	if err != nil {
+		return errors.Wrap(err, "failed to marshal value")
+	}
+
+	return r.client.Set(keyword, data, 180*time.Second).Err()
 }
 
 type ProductSlice struct {

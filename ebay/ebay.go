@@ -20,41 +20,43 @@ import (
 	"github.com/pkg/errors"
 )
 
-var c = colly.NewCollector(
-	colly.AllowedDomains("www.ebay.com"),
-)
-
 type Ebay struct {
+	c       *colly.Collector
 	keyword string
 	results []productPB.ProductResponse
+	stream  productPB.ProductService_QueryServer
 }
 
 // New creates a new Ebay instance.
-func New(kw string) *Ebay {
-	return &Ebay{keyword: kw}
+func New(stream productPB.ProductService_QueryServer, kw string) *Ebay {
+	c := colly.NewCollector(colly.AllowedDomains("www.ebay.com"))
+	return &Ebay{
+		c:       c,
+		keyword: kw,
+		stream:  stream,
+	}
 }
 
 // Crawl performs crawling operations.
 func (e *Ebay) Crawl() []productPB.ProductResponse {
 
-	c.OnHTML(".s-item", func(soup *colly.HTMLElement) {
+	e.c.OnHTML(".s-item", func(soup *colly.HTMLElement) {
 		if err := e.extractContent(soup); err != nil {
 			log.Println("Failed to extract ebay product content: ", err)
 		}
 	})
 
-	c.OnRequest(func(r *colly.Request) {
+	e.c.OnRequest(func(r *colly.Request) {
 		fmt.Println("Visiting", r.URL.String())
 	})
 
 	for page := 1; page <= 5; page++ {
 		url := fmt.Sprintf("https://www.ebay.com/sch/i.html?_nkw=%v&_pgn=%v", html.EscapeString(strings.Replace(e.keyword, " ", "+", -1)), page)
-		if err := c.Visit(url); err != nil {
+		if err := e.c.Visit(url); err != nil {
 			log.Fatalf("Failed to start scraping url %q: %v", url, err)
 		}
 	}
 
-	// TODO: not sure what type to return. map? slice? or single one?
 	return e.results
 }
 
@@ -83,6 +85,7 @@ func (e *Ebay) extractContent(soup *colly.HTMLElement) error {
 	}
 
 	e.results = append(e.results, res)
+	e.stream.Send(&res)
 
 	return nil
 }
