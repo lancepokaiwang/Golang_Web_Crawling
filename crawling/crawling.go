@@ -1,7 +1,7 @@
 package crawling
 
 import (
-	// "github.com/lancepokaiwang/Golang_Web_Crawling/amazon"
+	"github.com/lancepokaiwang/Golang_Web_Crawling/amazon"
 	"github.com/lancepokaiwang/Golang_Web_Crawling/ebay"
 	productPB "github.com/lancepokaiwang/Golang_Web_Crawling/proto/product"
 )
@@ -15,9 +15,8 @@ type CrawlClient struct {
 func (cc CrawlClient) PerformCrawling(keyword string, web WebsiteType) []productPB.ProductResponse {
 	switch web {
 	case TypeAmazon:
-		// a := amazon.New(keyword)
-		// return a.Crawl()
-		return nil
+		a := amazon.New(keyword)
+		return a.Crawl()
 	case TypeEbay:
 		e := ebay.New(keyword)
 		return e.Crawl()
