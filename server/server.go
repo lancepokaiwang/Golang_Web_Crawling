@@ -51,11 +51,13 @@ func (*Server) Query(req *productPB.ProductRequest, stream productPB.ProductServ
 	amazon := &crawling.CrawlClient{
 		Keyword: keyword,
 		Web:     crawling.TypeAmazon,
+		Stream:  stream,
 	}
 
 	ebay := &crawling.CrawlClient{
 		Keyword: keyword,
 		Web:     crawling.TypeEbay,
+		Stream:  stream,
 	}
 
 	wg := &sync.WaitGroup{}

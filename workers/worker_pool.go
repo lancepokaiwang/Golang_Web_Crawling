@@ -13,7 +13,7 @@ func worker(ctx context.Context, jobs <-chan *job) {
 	for {
 		select {
 		case job := <-jobs:
-			job.resultChan <- job.cc.PerformCrawling(job.cc.Keyword, job.cc.Web)
+			job.resultChan <- job.cc.PerformCrawling()
 			job.wg.Done()
 
 		// Cancel worker.

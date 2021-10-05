@@ -74,6 +74,25 @@ func (r *Redis) Query(keyword string) ([]productPB.ProductResponse, error) {
 	return results.Products, nil
 }
 
+func (r *Redis) Update(keyword string, value ProductSlice) error {
+	data_exist, err := r.Query(keyword)
+	if err != nil {
+		return errors.Wrap(err, "failed to query existing data")
+	}
+
+	// Combine exist data.
+	if data_exist != nil {
+		value.Products = append(value.Products, data_exist...)
+	}
+
+	data, err := value.marshalBinary()
+	if err != nil {
+		return errors.Wrap(err, "failed to marshal value")
+	}
+
+	return r.client.Set(keyword, data, 180*time.Second).Err()
+}
+
 type ProductSlice struct {
 	Products []productPB.ProductResponse
 }

@@ -9,16 +9,17 @@ import (
 type CrawlClient struct {
 	Keyword string
 	Web     WebsiteType
+	Stream  productPB.ProductService_QueryServer
 }
 
 // PerformCrawling prodives an entry point for clients who want to perform crawling for both platforms.
-func (cc CrawlClient) PerformCrawling(keyword string, web WebsiteType) []productPB.ProductResponse {
-	switch web {
+func (cc CrawlClient) PerformCrawling() []productPB.ProductResponse {
+	switch cc.Web {
 	case TypeAmazon:
 		a := amazon.New(keyword)
 		return a.Crawl()
 	case TypeEbay:
-		e := ebay.New(keyword)
+		e := ebay.New(cc.Stream, cc.Keyword)
 		return e.Crawl()
 	default:
 		return nil

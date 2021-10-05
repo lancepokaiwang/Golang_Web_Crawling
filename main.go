@@ -6,7 +6,7 @@ import (
 )
 
 // This is where the whole application start.
-// http://localhost:8080/products
+// http://localhost:8000/products
 func main() {
 	s.Println("Starting application")
 	server.New()

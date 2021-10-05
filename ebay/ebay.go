@@ -24,14 +24,16 @@ type Ebay struct {
 	c       *colly.Collector
 	keyword string
 	results []productPB.ProductResponse
+	stream  productPB.ProductService_QueryServer
 }
 
 // New creates a new Ebay instance.
-func New(kw string) *Ebay {
+func New(stream productPB.ProductService_QueryServer, kw string) *Ebay {
 	c := colly.NewCollector(colly.AllowedDomains("www.ebay.com"))
 	return &Ebay{
 		c:       c,
 		keyword: kw,
+		stream:  stream,
 	}
 }
 
@@ -83,6 +85,7 @@ func (e *Ebay) extractContent(soup *colly.HTMLElement) error {
 	}
 
 	e.results = append(e.results, res)
+	e.stream.Send(&res)
 
 	return nil
 }
