@@ -16,15 +16,17 @@ type Amazon struct {
 	c       *colly.Collector
 	keyword string
 	results []productPB.ProductResponse
+	stream  productPB.ProductService_QueryServer
 }
 
 // New creates a new Amazon instance.
-func New(kw string) *Amazon {
+func New(stream productPB.ProductService_QueryServer, kw string) *Amazon {
 	c := colly.NewCollector(colly.AllowedDomains("www.amazon.com", "amazon.com"))
-	
+
 	return &Amazon{
 		c:       c,
 		keyword: kw,
+		stream:  stream,
 	}
 }
 
@@ -42,7 +44,7 @@ func (a *Amazon) Crawl() []productPB.ProductResponse {
 		image := h.ChildAttr("img.s-image", "src")
 		link := h.ChildAttr("a.a-link-normal", "href")
 		priceNum, err := strconv.ParseFloat(price, 32)
-		if err != nil{
+		if err != nil {
 			log.Println("Failed to convert price to float32: ", err)
 		}
 		if !(s[len(s)-1] == title) && title != "" {
@@ -56,11 +58,12 @@ func (a *Amazon) Crawl() []productPB.ProductResponse {
 					ImageUrl:   image,
 				}
 				a.results = append(a.results, res)
+				a.stream.Send(&res)
 			}
 		}
 	})
 
-	for i:=1; i<=5; i++{
+	for i := 1; i <= 5; i++ {
 		url := fmt.Sprintf("https://www.amazon.com/s?k=%v&page=%v&language=zh_TW&currency=TWD", html.EscapeString(strings.Replace(a.keyword, " ", "+", -1)), i)
 		if err := a.c.Visit(url); err != nil {
 			log.Fatalf("Failed to start scraping url %q: %v", url, err)

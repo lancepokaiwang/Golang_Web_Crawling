@@ -16,7 +16,7 @@ type CrawlClient struct {
 func (cc CrawlClient) PerformCrawling() []productPB.ProductResponse {
 	switch cc.Web {
 	case TypeAmazon:
-		a := amazon.New(keyword)
+		a := amazon.New(cc.Stream, cc.Keyword)
 		return a.Crawl()
 	case TypeEbay:
 		e := ebay.New(cc.Stream, cc.Keyword)
