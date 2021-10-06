@@ -17,6 +17,12 @@ services:
     volumes: 
       - ./logs:/app/logs
 
+  redis:
+    image: "redis:alpine"
+    container_name: redis-test-instance
+    ports:
+      - '6379:6379'
+
   nginx:
     build:
       context: nginxconf
