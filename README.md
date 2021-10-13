@@ -19,7 +19,7 @@ service YourService {
 - [x] 3. Using ***Worker package (multi-threading in Golang)*** to accelerate workflow. But there must be a maximum limit, though. (Use third-party tools)
 - [x] 4. Multi-page results must be supported.
 - [x] 5. Colud use ***interface*** feature to make code more flexible and extendable.
-- [ ] 6. When program is interrupted, ***worker*** can not be stopped until it complete its task.
+- [x] 6. When program is interrupted, ***worker*** can not be stopped until it complete its task.
 
 ### Optional (Plus)
 - [ ] 1. Construct a proper front-end web application.
