@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	"log"
 	"net"
 	"os"
 	"os/signal"
@@ -17,10 +16,6 @@ import (
 	"github.com/lancepokaiwang/Golang_Web_Crawling/workers"
 
 	"google.golang.org/grpc"
-)
-
-const (
-	workersCount = 5
 )
 
 var wp *workers.WorkerPool
@@ -62,18 +57,18 @@ func (*Server) Query(req *productPB.ProductRequest, stream productPB.ProductServ
 
 	wg := &sync.WaitGroup{}
 	wg.Add(2)
-	resultChan := make(chan []productPB.ProductResponse, 2)
+	resultCh := make(chan []productPB.ProductResponse, 2)
 
-	go wp.NewJob([]*crawling.CrawlClient{amazon, ebay}, wg, resultChan)
+	go wp.QueueJob([]*crawling.CrawlClient{amazon, ebay}, wg, resultCh)
 
 	go func() {
 		wg.Wait()
-		close(resultChan)
+		close(resultCh)
 	}()
 
 	var combinedResult []productPB.ProductResponse
 
-	for results := range resultChan {
+	for results := range resultCh {
 		combinedResult = append(combinedResult, results...)
 		fmt.Printf("result len: %d\n", len(results))
 	}
@@ -86,19 +81,25 @@ func (*Server) Query(req *productPB.ProductRequest, stream productPB.ProductServ
 	return nil
 }
 
+const (
+	workersCount = 5
+	jobsCount    = 10
+)
+
 func New() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// Init worker pool.
-	wp = workers.New(workersCount)
+	// Initialize worker pool.
+	wp = workers.New(workersCount, jobsCount)
+	defer wp.Close()
 	// Activate workers to listening for jobs channel.
 	go wp.Run(ctx)
 
 	s.Println("Starting gRPC server")
 	lis, err := net.Listen("tcp", "0.0.0.0:8000")
 	if err != nil {
-		log.Fatalf("Failed to create gRPC service: %v \n", err)
+		s.Fatalf("Failed to create gRPC service: %v \n", err)
 	}
 
 	grpcServer := grpc.NewServer()
@@ -106,24 +107,23 @@ func New() {
 
 	// Graceful shutdown.
 	sigCh := make(chan os.Signal, 1)
+	done := make(chan bool, 1)
 	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
-	wg := sync.WaitGroup{}
-	wg.Add(1)
+
 	go func() {
-		s := <-sigCh
-		log.Printf("got signal %v, attempting graceful shutdown", s)
+		<-sigCh
 		cancel()
 		grpcServer.GracefulStop()
-		wg.Done()
+		done <- true
 	}()
 
 	fmt.Println("grpc server is listening...")
 	if err := grpcServer.Serve(lis); err != nil {
-		log.Fatalf("Failed to serve: %v \n", err)
+		s.Fatalf("Failed to serve: %v \n", err)
 	}
 
-	wg.Wait()
-	log.Println("Graceful shutdown")
+	<-done
+	s.Println("Graceful shutdown")
 }
 
 func (*Server) SayHello(ctx context.Context, req *productPB.HelloRequest) (*productPB.HelloReply, error) {

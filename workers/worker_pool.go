@@ -9,11 +9,11 @@ import (
 	productPB "github.com/lancepokaiwang/Golang_Web_Crawling/proto/product"
 )
 
-func worker(ctx context.Context, jobs <-chan *job) {
+func worker(ctx context.Context, jobCh <-chan *job) {
 	for {
 		select {
-		case job := <-jobs:
-			job.resultChan <- job.cc.PerformCrawling()
+		case job := <-jobCh:
+			job.resultCh <- job.cc.PerformCrawling()
 			job.wg.Done()
 
 		// Cancel worker.
@@ -27,41 +27,44 @@ func worker(ctx context.Context, jobs <-chan *job) {
 
 type WorkerPool struct {
 	workersCount int
-	jobs         chan *job
+	jobCh        chan *job
 }
 
-func New(workersCount int) *WorkerPool {
+func New(workersCount int, jobsCount int) *WorkerPool {
 	return &WorkerPool{
 		workersCount: workersCount,
-		// TODO: change hard coded "10" here. Just for test.
-		jobs: make(chan *job, 10),
+		jobCh:        make(chan *job, jobsCount),
 	}
+}
+
+func (wp *WorkerPool) Close() {
+	close(wp.jobCh)
 }
 
 func (wp *WorkerPool) Run(ctx context.Context) {
 	for i := 0; i < wp.workersCount; i++ {
-		go worker(ctx, wp.jobs)
+		go worker(ctx, wp.jobCh)
 	}
 }
 
 type job struct {
-	cc         *crawling.CrawlClient
-	wg         *sync.WaitGroup
-	resultChan chan<- []productPB.ProductResponse
+	cc       *crawling.CrawlClient
+	wg       *sync.WaitGroup
+	resultCh chan<- []productPB.ProductResponse
 }
 
-func newJob(cc *crawling.CrawlClient, wg *sync.WaitGroup, resultChan chan<- []productPB.ProductResponse) *job {
+func newJob(cc *crawling.CrawlClient, wg *sync.WaitGroup, resultCh chan<- []productPB.ProductResponse) *job {
 	return &job{
-		cc:         cc,
-		wg:         wg,
-		resultChan: resultChan,
+		cc:       cc,
+		wg:       wg,
+		resultCh: resultCh,
 	}
 }
 
-func (wp *WorkerPool) NewJob(ccs []*crawling.CrawlClient, wg *sync.WaitGroup, resultChan chan<- []productPB.ProductResponse) {
-	// If jobs is full, it will block here.
+func (wp *WorkerPool) QueueJob(ccs []*crawling.CrawlClient, wg *sync.WaitGroup, resultCh chan<- []productPB.ProductResponse) {
 	for _, cc := range ccs {
-		job := newJob(cc, wg, resultChan)
-		wp.jobs <- job
+		job := newJob(cc, wg, resultCh)
+		// If jobCh is full, it will block here.
+		wp.jobCh <- job
 	}
 }
