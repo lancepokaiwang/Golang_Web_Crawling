@@ -2,15 +2,12 @@ FROM golang:1.16-alpine
 
 WORKDIR /app
 
-COPY go.mod ./
-COPY go.sum ./
-COPY errors ./errors
-COPY server ./server
-COPY proto ./proto
-
-RUN go mod download
+RUN apk update
+RUN apk add git
 
 COPY . /app
+
+RUN go mod tidy
 RUN go build -o /docker-gs-ping
 
 EXPOSE 8000
